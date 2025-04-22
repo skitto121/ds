@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Bot</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --secondary: #6366f1;
+      --bg: #f9fafb;
+      --text: #1f2937;
+      --white: #ffffff;
+      --muted: #6b7280;
+      --error: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--text);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 15px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      transition: 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-bottom: 14px;
+    }
+
+    button:hover {
+      background-color: var(--secondary);
+    }
+
+    .output {
+      margin-top: 20px;
+      background-color: #f3f4f6;
+      border-radius: 10px;
+      padding: 20px;
+      min-height: 60px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .item {
+      background-color: white;
+      padding: 12px 14px;
+      margin-top: 10px;
+      border-left: 4px solid var(--primary);
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      color: var(--text);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .user-email {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: block;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .error {
+      background-color: #fee2e2;
+      color: var(--error);
+    }
+
+    .success {
+      background-color: #d1fae5;
+      color: var(--success);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .google-btn {
+      background-color: #4285F4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    .google-btn:hover {
+      background-color: #357ae8;
+    }
+
+    .google-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      background-color: white;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 22px;
+      }
+
+      input, button {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🧠 Memory Bot</h2>
+    
+    <div id="authContainer">
+      <button id="googleSignInBtn" class="google-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="google-icon">
+        Continue with Google
+      </button>
+    </div>
+    
+    <div id="userInfo" class="user-info hidden">
+      <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+      <div>Logged in as <span id="userEmail" class="user-email"></span></div>
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+    
+    <div id="messageBox" class="message hidden"></div>
+    
+    <div id="appContent" class="hidden">
+      <input type="text" id="memoryInput" placeholder="Type something to remember..." />
+      <button onclick="saveMemory()">💾 Save to Memory</button>
+
+      <input type="text" id="questionInput" placeholder="Ask anything from memory..." />
+      <button onclick="askMemory()">🔍 Ask</button>
+
+      <div class="output" id="outputBox">
+        Matching results will show here...
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getAuth, 
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { 
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAC-3QL3qDMTJexZ-ziJ8z-DOVbk1_zMC4",
+      authDomain: "memorybot-941ec.firebaseapp.com",
+      projectId: "memorybot-941ec",
+      storageBucket: "memorybot-941ec.appspot.com",
+      messagingSenderId: "130758201750",
+      appId: "1:130758201750:web:9ac033abd31ae843434db7",
+      measurementId: "G-YR3FECXJSX"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    // DOM elements
+    const authContainer = document.getElementById('authContainer');
+    const userInfo = document.getElementById('userInfo');
+    const userEmail = document.getElementById('userEmail');
+    const userAvatar = document.getElementById('userAvatar');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const googleSignInBtn = document.getElementById('googleSignInBtn');
+    const messageBox = document.getElementById('messageBox');
+    const appContent = document.getElementById('appContent');
+
+    // Check auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        userEmail.textContent = user.email;
+        userAvatar.src = user.photoURL || 'https://www.gravatar.com/avatar/?d=mp';
+        authContainer.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        appContent.classList.remove('hidden');
+      } else {
+        // User is signed out
+        authContainer.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+        appContent.classList.add('hidden');
+      }
+    });
+
+    // Google Sign In function
+    googleSignInBtn.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        showMessage('Logged in successfully!', 'success');
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+
+    // Logout function
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        showMessage('Logged out successfully!', 'success');
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+
+    // Show message function
+    function showMessage(message, type) {
+      messageBox.textContent = message;
+      messageBox.className = `message ${type}`;
+      messageBox.classList.remove('hidden');
+      
+      setTimeout(() => {
+        messageBox.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Save memory to Firestore
+    async function saveMemory() {
+      const input = document.getElementById("memoryInput").value.trim();
+      if (!input) return;
+
+      const user = auth.currentUser;
+      if (!user) {
+        showMessage('Please sign in to save memories', 'error');
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "memories"), {
+          userId: user.uid,
+          content: input,
+          createdAt: new Date()
+        });
+        
+        document.getElementById("outputBox").innerText = `"${input}" saved to memory.`;
+        document.getElementById("memoryInput").value = "";
+        showMessage('Memory saved successfully!', 'success');
+      } catch (error) {
+        showMessage('Error saving memory: ' + error.message, 'error');
+      }
+    }
+
+    // Ask memory from Firestore
+    async function askMemory() {
+      const queryText = document.getElementById("questionInput").value.trim().toLowerCase();
+      const outputBox = document.getElementById("outputBox");
+      outputBox.innerHTML = "";
+
+      if (!queryText) {
+        outputBox.innerText = "Please enter a question to search memory.";
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        showMessage('Please sign in to access memories', 'error');
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, "memories"),
+          where("userId", "==", user.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const words = queryText.split(" ");
+        
+        const related = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (words.some(word => data.content.toLowerCase().includes(word))) {
+            related.push(data.content);
+          }
+        });
+
+        if (related.length === 0) {
+          outputBox.innerText = `No related info found for: "${queryText}"`;
+          return;
+        }
+
+        const heading = document.createElement("div");
+        heading.innerHTML = `<strong>Found ${related.length} match(es):</strong><br><br>`;
+        outputBox.appendChild(heading);
+
+        related.forEach(info => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerText = info;
+          outputBox.appendChild(div);
+        });
+
+        document.getElementById("questionInput").value = "";
+      } catch (error) {
+        showMessage('Error searching memories: ' + error.message, 'error');
+      }
+    }
+
+    // Make functions available globally
+    window.saveMemory = saveMemory;
+    window.askMemory = askMemory;
+  </script>
+</body>
+</html>
